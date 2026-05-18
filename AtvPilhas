@@ -1,0 +1,130 @@
+#include <iostream>
+#include <climits>
+
+const int TAM = 30;
+
+// ==========================================
+// 1. IMPLEMENTAÇÃO DA PILHA USANDO VETOR
+// ==========================================
+class PilhaVetor {
+private:
+    int elementos[TAM];
+    int topoIdx;
+
+public:
+    PilhaVetor() : topoIdx(-1) {}
+
+    bool estaVazia() const {
+        return topoIdx == -1;
+    }
+
+    bool estaCheia() const {
+        return topoIdx == TAM - 1;
+    }
+
+    void empilhar(int valor) {
+        if (estaCheia()) {
+            std::cout << "Erro: Pilha cheia!\n";
+            return;
+        }
+        elementos[++topoIdx] = valor;
+    }
+
+    int desempilhar() {
+        if (estaVazia()) return -1;
+        return elementos[topoIdx--];
+    }
+};
+
+// ==========================================
+// 2. IMPLEMENTAÇÃO DA PILHA USANDO LISTA ENCADEADA
+// ==========================================
+struct No {
+    int dado;
+    No* prox;
+};
+
+class PilhaLista {
+private:
+    No* topo;
+
+public:
+    PilhaLista() : topo(nullptr) {}
+
+    // Destrutor para evitar vazamento de memória
+    ~PilhaLista() {
+        while (!estaVazia()) {
+            desempilhar();
+        }
+    }
+
+    bool estaVazia() const {
+        return topo == nullptr;
+    }
+
+    void empilhar(int valor) {
+        No* novoNo = new No();
+        novoNo->dado = valor;
+        novoNo->prox = topo;
+        topo = novoNo;
+    }
+
+    int desempilhar() {
+        if (estaVazia()) return -1;
+        No* temp = topo;
+        int valor = temp->dado;
+        topo = topo->prox;
+        delete temp;
+        return valor;
+    }
+};
+
+// ==========================================
+// FUNÇÃO PRINCIPAL
+// ==========================================
+int main() {
+    // Para cumprir o requisito, os pares usarão Lista e os ímpares usarão Vetor
+    PilhaLista pilhaPares;
+    PilhaVetor pilhaImpares;
+
+    int numero;
+    int anterior = INT_MIN; // Define o menor valor inteiro possível como limite inicial
+
+    std::cout << "Digite 30 numeros inteiros em ORDEM CRESCENTE:\n";
+
+    for (int i = 0; i < TAM; ++i) {
+        while (true) {
+            std::cout << "Numero " << (i + 1) << "/30: ";
+            std::cin >> numero;
+
+            if (numero > anterior) {
+                break; // Entrada válida, sai do loop de validação
+            }
+            std::cout << "  -> Erro! O numero deve ser maior que " << anterior << ".\n";
+        }
+
+        anterior = numero; // Atualiza o limite para o próximo número
+
+        // Separação por paridade nas respectivas estruturas
+        if (numero % 2 == 0) {
+            pilhaPares.empilhar(numero);
+        } else {
+            pilhaImpares.empilhar(numero);
+        }
+    }
+
+    // Exibição dos resultados (Desempilhar inverte a ordem para decrescente)
+    std::cout << "\nDesempilhando PARES (Lista Encadeada - Ordem Decrescente):\n";
+    while (!pilhaPares.estaVazia()) {
+        std::cout << pilhaPares.desempilhar() << " ";
+    }
+    std::cout << "\n";
+
+    std::cout << "\nDesempilhando IMPARES (Vetor - Ordem Decrescente):\n";
+    while (!pilhaImpares.estaVazia()) {
+        std::cout << pilhaImpares.desempilhar() << " ";
+    }
+    std::cout << "\n";
+
+    return 0;
+}
