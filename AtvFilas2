@@ -1,0 +1,150 @@
+#include <iostream>
+#include <clocale>
+
+// ==========================================
+// 1. ESTRUTURAS PARA A FILA DE SENHAS
+// ==========================================
+struct NoSenha {
+    int numero;
+    NoSenha* prox;
+};
+
+class FilaSenha {
+private:
+    NoSenha* frente;
+    NoSenha* tras;
+    int total;
+
+public:
+    FilaSenha() : frente(nullptr), tras(nullptr), total(0) {}
+
+    // Destrutor para limpar a memória se sobrarem nós
+    ~FilaSenha() {
+        while (!estaVazia()) {
+            desenfileirar();
+        }
+    }
+
+    bool estaVazia() const {
+        return frente == nullptr;
+    }
+
+    int qtdElementos() const {
+        return total;
+    }
+
+    // Adiciona ao final da fila (FIFO)
+    void enfileirar(int num) {
+        NoSenha* novo = new NoSenha();
+        novo->numero = num;
+        novo->prox = nullptr;
+
+        if (estaVazia()) {
+            frente = novo;
+            tras = novo;
+        } else {
+            tras->prox = novo;
+            tras = novo;
+        }
+        total++;
+    }
+
+    // Remove do início da fila e retorna o número
+    int desenfileirar() {
+        if (estaVazia()) return -1;
+
+        NoSenha* temp = frente;
+        int num = temp->numero;
+
+        frente = frente->prox;
+        if (frente == nullptr) {
+            tras = nullptr;
+        }
+
+        delete temp;
+        total--;
+        return num;
+    }
+
+    // Imprime todas as senhas da fila (Usado na opção 4)
+    void listar() const {
+        if (estaVazia()) {
+            std::cout << "   (Nenhuma senha registrada)\n";
+            return;
+        }
+        NoSenha* atual = frente;
+        while (atual != nullptr) {
+            std::cout << "   -> Senha Nº " << atual->numero << "\n";
+            atual = atual->prox;
+        }
+    }
+};
+
+// ==========================================
+// 2. ESTRUTURAS PARA A LISTA DE GUICHÊS
+// ==========================================
+struct Guiche {
+    int id;
+    FilaSenha senhasAtendidas; // Cada guichê tem sua própria fila de senhas atendidas
+};
+
+struct NoGuiche {
+    Guiche dados;
+    NoGuiche* prox;
+};
+
+class ListaGuiche {
+private:
+    NoGuiche* inicio;
+    int totalAbertos;
+
+public:
+    ListaGuiche() : inicio(nullptr), totalAbertos(0) {}
+
+    // Destrutor para limpar a memória da lista de guichês
+    ~ListaGuiche() {
+        NoGuiche* atual = inicio;
+        while (atual != nullptr) {
+            NoGuiche* temp = atual;
+            atual = atual->prox;
+            delete temp; 
+        }
+    }
+
+    int qtdAbertos() const {
+        return totalAbertos;
+    }
+
+    // Opção 2: Insere um novo guichê (Valida se o ID já existe)
+    bool abrirGuiche(int id) {
+        if (buscarGuiche(id) != nullptr) {
+            return false; // ID já cadastrado
+        }
+
+        NoGuiche* novo = new NoGuiche();
+        novo->dados.id = id;
+        novo->prox = inicio; // Insere no início da lista encadeada
+        inicio = novo;
+        totalAbertos++;
+        return true;
+    }
+
+    // Busca um guichê pelo ID retornando o ponteiro do nó
+    NoGuiche* buscarGuiche(int id) {
+        NoGuiche* atual = inicio;
+        while (atual != nullptr) {
+            if (atual->dados.id == id) {
+                return atual;
+            }
+            atual = atual->prox;
+        }
+        return nullptr;
+    }
+};
+
+// ==========================================
+// FUNÇÃO PRINCIPAL
+// ==========================================
+int main() {
+    // Permite acentuação no terminal
+    std::setlocale(LC_
